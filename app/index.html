@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>IIHN Application</title>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular-animate.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular-sanitize.js"></script>
+  <script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-2.5.0.min.js"></script>
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  <script src="./app.js"></script>
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body ng-app="myApp">
+  <div ng-controller="myController" class="container theme-showcase" role="main" ng-cloak>
+
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <h1>IIHN Application</h1>
+      <h2>Example Truffle Dapp</h2>
+      <h3>You are ({{ account.my }}) and Balance({{ account.myBalance }})</h3>   
+    </div>
+
+    <div class="row">
+      <div class="col-md-12" style="margin-bottom: 5px;">
+        <div class="input-group">
+          <span class="input-group-addon">Search Account</span>
+          <select class="form-control" ng-options="account for account in account.list track by account" ng-model="selectAccount"></select>
+        </div>
+      </div> 
+    </div>
+
+  <uib-accordion close-others="oneAtATime">
+    <div uib-accordion-group class="panel-default">
+      <uib-accordion-heading>
+        Client Event List: 
+        <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
+      </uib-accordion-heading>
+      <table class="table">
+        <tr ng-repeat="item in events.clientList" ng-if="$first">
+          <th ng-repeat="(key, value) in item">
+            {{ key }}
+          </th>
+        </tr>
+        <tr ng-if="item.owner == selectAccount" ng-repeat="item in events.clientList">
+          <td ng-repeat="(key, value) in item">
+            {{ value }}
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div uib-accordion-group class="panel-default">
+      <uib-accordion-heading>
+        Server Event List:
+        <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
+      </uib-accordion-heading>
+      <table class="table">
+        <tr ng-repeat="item in events.serverList" ng-if="$first">
+          <th ng-repeat="(key, value) in item">
+            {{ key }}
+          </th>
+        </tr>
+        <tr ng-if="item.owner == selectAccount" ng-repeat="item in events.serverList">
+          <td ng-repeat="(key, value) in item">
+            {{ value }}
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div uib-accordion-group class="panel-default" style="overflow: auto">
+      <uib-accordion-heading>
+        Transaction Event List: 
+        <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
+      </uib-accordion-heading>
+      <table class="table">
+        <tr ng-repeat="item in events.transactionList" ng-if="$first">
+          <th ng-repeat="(key, value) in item">
+            {{ key }}
+          </th>
+        </tr>
+        <tr ng-if="item.provider == selectAccount" ng-repeat="item in events.transactionList">
+          <td ng-repeat="(key, value) in item">
+            {{ value }}
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div uib-accordion-group class="panel-default">
+      <uib-accordion-heading>
+        MQTT publish & JWT get API
+        <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': status.open, 'glyphicon-chevron-right': !status.open}"></i>
+      </uib-accordion-heading>
+      <div class="row">
+        <div class="col-md-6">
+          <h3>MQTT publish</h3>
+          AES Encryption use client secret
+          <div class="panel panel-success">
+            <div class="panel-heading">
+              <h3 class="panel-title">Client Register</h3>
+            </div>
+            <div class="panel-body">
+              <form>
+                <div class="form-group">
+                  <label for="topic">topic:</label>
+                  <input type="text" class="form-control" ng-model="mqtt.topic" required></input>
+                </div>
+                <div class="form-group">
+                  <label for="broker">broker(ip:port):</label>
+                  <input type="text" class="form-control" ng-model="mqtt.broker" required></input>
+                </div>
+                <div class="form-group">
+                  <label for="value">payload:</label>
+                  <input type="number" class="form-control" ng-model="mqtt.value" required></input>
+                </div>
+                <button type="submit" class="btn btn-primary">Register</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <h3>JWT get API</h3>
+          Use transaction JWT get data then AES decryption    
+          <div class="panel panel-success">
+            <div class="panel-heading">
+              <h3 class="panel-title">Client Register</h3>
+            </div>
+            <div class="panel-body">
+              <form>
+                <div class="form-group">
+                  <label for="topic">jwt_payload:</label>
+                  <input type="text" class="form-control" ng-model="mqtt.jwt_payload" required></input>
+                </div>
+                <button type="submit" class="btn btn-primary">Register</button>
+              </form>
+            </div>
+          </div>      
+        </div>
+      </div>
+    </div>
+
+
+
+  </uib-accordion>
+
+
+
+
+    <div class="page-header">
+      <h1>Smart Contracts</h1>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Server Register</h3>
+          </div>
+          <div class="panel-body">
+            <ol>
+              <li>Generate RSA key, get public_key_loc(uuid)</li>
+              <li>RSA encrypt (provider AES key) as secret</li>
+              <li>Transaction contract </li>
+              <li>Event return, MQTT subscription</li>
+            </ol>
+            <form>
+              <div class="form-group">
+                <label for="ip">ip:</label>
+                <input type="text" class="form-control" ng-model="form.server.ip" required></input>
+              </div>
+              <!--<div class="form-group">
+                <label for="topic">MQTT topic:</label>
+                <input type="text" class="form-control" ng-model="form.server.topic" required></input>
+              </div>-->
+              <div class="form-group">
+                <label for="publicKey">publicKey:</label>
+                <button ng-click="api().RSAgenerate('server', 'publicKey')" type="button" class="btn btn-link btn-sm">RSA Public Key</button>
+                <input type="text" class="form-control" ng-model="form.server.publicKey" required></input>
+              </div>
+              <div class="form-group">
+                <label for="secret">secret:</label>
+                <button ng-click="api().RSAencryption('server', 'secret')" type="button" class="btn btn-link btn-sm">RSA Encryption</button>
+                <input type="text" class="form-control" ng-model="form.server.secret" required></input>
+              </div>
+              <button type="submit" class="btn btn-primary" ng-click="serverRegister(form.server)">Register</button>
+            </form>
+          </div>
+        </div>
+      </div><!-- /.col-md-4 -->
+      
+      <div class="col-md-6">
+        <div class="panel panel-success">
+          <div class="panel-heading">
+            <h3 class="panel-title">Client Register</h3>
+          </div>
+          <div class="panel-body">
+            <ol>
+              <li>Transaction contract </li>
+              <li>Event return</li>
+              <li>MQTT publish AES(data) (provider AES key)</li>
+            </ol>
+            <form>
+              <div class="form-group">
+                <label for="ip">ip(server):</label>
+                <input type="text" class="form-control" ng-model="form.client.ip" required></input>
+              </div>
+              <div class="form-group">
+                <label for="topic">topic:</label>
+                <input type="text" class="form-control" ng-model="form.client.topic" required></input>
+              </div>
+              <div class="form-group">
+                <label for="broker">broker(ip:port):</label>
+                <input type="text" class="form-control" ng-model="form.client.broker" required></input>
+              </div>
+              <div class="form-group">
+                <label for="value">value(hours):</label>
+                <input type="number" class="form-control" ng-model="form.client.value" required></input>
+              </div>
+              <button type="submit" class="btn btn-primary" ng-click="clientRegister(form.client)">Register</button>
+            </form>
+          </div>
+        </div>
+      </div><!-- /.col-md-4 -->
+
+      <div class="col-md-6">
+        <div class="panel panel-warning">
+          <div class="panel-heading">
+            <h3 class="panel-title">Transaction</h3>
+          </div>
+          <div class="panel-body">
+            <ol>
+              <li>Get server RSA public_key_loc</li>
+              <li>RSA encrypt (consumer AES key) as secret</li>
+              <li>Transaction contract </li>
+              <li>Event return, then get JWT token</li>
+              <li>JWT call API then AES decryption</li>              
+            </ol>
+            <form>
+              <div class="form-group">
+                <button ng-click="api().RSAencryption('transaction', 'secret')" type="button" class="btn btn-link btn-sm">RSA Encryption</button>
+                <label for="secret">secret:</label>
+                <input type="text" class="form-control" ng-model="form.transaction.secret" required></input>
+              </div>
+              <div class="form-group">
+                <label for="duration">duration(hours):</label>
+                <input type="number" class="form-control" ng-model="form.transaction.duration" required></input>
+              </div>
+              <div class="form-group">
+                <label for="provider">provider:</label>
+                <input type="text" class="form-control" ng-model="form.transaction.provider" required></input>
+              </div>
+              <div class="form-group">
+                <label for="ip">ip:</label>
+                <input type="text" class="form-control" ng-model="form.transaction.ip" required></input>
+              </div>
+              <div class="form-group">
+                <label for="topic">topic:</label>
+                <input type="text" class="form-control" ng-model="form.transaction.topic" required></input>
+              </div> 
+              <div class="form-group">
+                <label for="value">value(value/hours): client(topic).value*duration </label>
+                <input type="number" class="form-control" ng-model="form.transaction.value" required></input>
+              </div>
+              <button type="submit" class="btn btn-primary" ng-click="transaction(form.transaction)">Transaction</button>
+              Then get JWT
+            </form>
+          </div>
+        </div>
+      </div><!-- /.col-md-4 -->
+
+      <div class="col-md-6">
+        <div class="panel panel-primary">
+          <div class="panel-heading">
+            <h3 class="panel-title">Server Delete</h3>
+          </div>
+          <div class="panel-body">
+            <form>
+               can't delete if client exist
+              <div class="form-group">
+                <label for="ip">ip:</label>
+                <input type="text" class="form-control" ng-model="form.serverDelete.ip" required></input>
+              </div>
+              <button type="submit" class="btn btn-primary" ng-click="serverDelete(form.serverDelete)">Delete</button>
+            </form>
+          </div>
+        </div>
+      </div><!-- /.col-md-4 -->
+
+      <div class="col-md-6">
+        <div class="panel panel-info">
+          <div class="panel-heading">
+            <h3 class="panel-title">Client Delete</h3>
+          </div>
+          <div class="panel-body">
+            <form>
+              <div class="form-group">
+                <label for="ip">ip:</label>
+                <input type="text" class="form-control" ng-model="form.clientDelete.ip" required></input>
+              </div>
+              <div class="form-group">
+                <label for="topic">topic:</label>
+                <input type="text" class="form-control" ng-model="form.clientDelete.topic" required></input>
+              </div>
+              <button type="submit" class="btn btn-primary" ng-click="clientDelete(form.clientDelete)">Delete</button>
+            </form>
+          </div>
+        </div>
+      </div><!-- /.col-md-4 -->
+
+      
+
+      
+    </div>
+
+
+
+  </div>
+
+</body>
+</html>
