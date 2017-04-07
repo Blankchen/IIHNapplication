@@ -51,11 +51,11 @@ def generate_RSA(public_key_loc="public_key_loc"):
         return public_key_loc
     new_key = RSA.generate(bits=1024, e=65537) 
     public_key = new_key.publickey().exportKey("PEM") 
-    f = open(public_key_loc + ".pem", 'wb')
+    f = open("keys/"+public_key_loc + ".pem", 'wb')
     f.write(public_key)
     f.close()
     private_key = new_key.exportKey("PEM") 
-    f = open("private_key.pem", 'wb')
+    f = open("keys/"+"private_key.pem", 'wb')
     f.write(private_key)
     f.close()
     return public_key_loc
@@ -70,7 +70,7 @@ def encrypt_RSA(message, public_key_loc="public_key_loc"):
     from Crypto.PublicKey import RSA
     from Crypto.Cipher import PKCS1_OAEP
     from base64 import b64encode
-    key = open(public_key_loc + ".pem", "r").read()
+    key = open("keys/"+public_key_loc + ".pem", "r").read()
     rsakey = RSA.importKey(key)
     rsakey = PKCS1_OAEP.new(rsakey)
     encrypted = rsakey.encrypt(message)
@@ -86,7 +86,7 @@ def decrypt_RSA(package, private_key_loc="private_key.pem"):
     from Crypto.PublicKey import RSA
     from Crypto.Cipher import PKCS1_OAEP
     from base64 import b64decode
-    key = open(private_key_loc, "r").read()
+    key = open("keys/"+private_key_loc, "r").read()
     rsakey = RSA.importKey(key)
     rsakey = PKCS1_OAEP.new(rsakey)
     decrypted = rsakey.decrypt(b64decode(package))

@@ -17,7 +17,7 @@ var myApp = angular.module('myApp', ['ngAnimate', 'ngSanitize', 'ui.bootstrap'])
 // C:\Users\Blank\Blockchain  (truffle-init-webpack@0.0.1)
 // testrpc.cmd
 // truffle.cmd compile
-// truffle.cmd migrate
+// truffle.cmd migrate --reset
 // npm run build
 // truffle.cmd serve
 // http://localhost:8080/index.html
@@ -275,7 +275,7 @@ myApp.controller('myController', function ($scope, $http) {
     var account = $scope.account.my;
     IIHN.deployed().then(function (instance) {
       meta = instance;
-      return meta.serverRegister(ip, publicKey, secret, { from: account, gas: 241896 });
+      return meta.serverRegister(ip, publicKey, secret, { from: account, gas: 50418096 });
     }).then(function () {
       console.log("Transaction complete!");
       setTimeout(function() {
