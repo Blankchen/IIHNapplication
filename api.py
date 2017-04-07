@@ -38,29 +38,27 @@ def AES_decryption(secret_key, cipher_text):
     plain_text = decryption_suite.decrypt(b64decode(cipher_text))
     return plain_text
 
-def generate_RSA(public_key_loc="public_key_loc"):
+def generate_RSA(uuid):
     '''
     https://gist.github.com/lkdocs/6519378
     Generate an RSA keypair with an exponent of 65537 in PEM format
     param: bits The key length in bits
     Return private key and public key
+    uuid 20byte
     '''
     from Crypto.PublicKey import RSA
-    # check if generated
-    if os.path.isfile(public_key_loc) or public_key_loc=="private_key.pem":
-        return public_key_loc
     new_key = RSA.generate(bits=1024, e=65537) 
     public_key = new_key.publickey().exportKey("PEM") 
-    f = open("keys/"+public_key_loc + ".pem", 'wb')
+    f = open("keys/"+uuid+"_public.pem", 'wb')
     f.write(public_key)
     f.close()
     private_key = new_key.exportKey("PEM") 
-    f = open("keys/"+"private_key.pem", 'wb')
+    f = open("keys/"+uuid+"_private.pem", 'wb')
     f.write(private_key)
     f.close()
-    return public_key_loc
+    return uuid
 
-def encrypt_RSA(message, public_key_loc="public_key_loc"):
+def encrypt_RSA(message, uuid):
     '''
     https://gist.github.com/lkdocs/6519270
     param: public_key_loc Path to public key
@@ -70,13 +68,19 @@ def encrypt_RSA(message, public_key_loc="public_key_loc"):
     from Crypto.PublicKey import RSA
     from Crypto.Cipher import PKCS1_OAEP
     from base64 import b64encode
-    key = open("keys/"+public_key_loc + ".pem", "r").read()
+    key = open("keys/"+uuid+"_public.pem", "r").read()
     rsakey = RSA.importKey(key)
     rsakey = PKCS1_OAEP.new(rsakey)
     encrypted = rsakey.encrypt(message)
-    return b64encode(encrypted)
+    
+    package = b64encode(encrypted)
+    file_name = package[:20]
+    f = open("keys/"+file_name+"_secret.enc", 'wb')
+    f.write(package)
+    f.close()
+    return file_name
 
-def decrypt_RSA(package, private_key_loc="private_key.pem"):
+def decrypt_RSA(file_name, uuid):
     '''
     https://docs.launchkey.com/developer/encryption/python/python-encryption.html
     param: public_key_loc Path to your private key
@@ -86,9 +90,10 @@ def decrypt_RSA(package, private_key_loc="private_key.pem"):
     from Crypto.PublicKey import RSA
     from Crypto.Cipher import PKCS1_OAEP
     from base64 import b64decode
-    key = open("keys/"+private_key_loc, "r").read()
+    key = open("keys/"+uuid+"_private.pem", "r").read()
     rsakey = RSA.importKey(key)
     rsakey = PKCS1_OAEP.new(rsakey)
+    package = open("keys/"+file_name+"_secret.enc", "r").read()
     decrypted = rsakey.decrypt(b64decode(package))
     return decrypted
 
@@ -162,18 +167,19 @@ class RSA(Resource):
         parser = reqparse.RequestParser()
         # parser.add_argument('public_key_loc', type=str, location='args', help='public_key_loc cannot be converted')
         parser.add_argument('message', type=str, location='args', help='message cannot be converted')
+        parser.add_argument('uuid_ref', type=str, location='args', help='uuid_ref cannot be converted')
         args = parser.parse_args()
-        return encrypt_RSA(args['message'])
+        # return filename as secret
+        return encrypt_RSA(args['message'], args['uuid_ref'])
         # return encrypt_RSA(args['public_key_loc'], args['message'])
 
     def post(self):
         # check exist then create RSA key pairs return public key
         # key reference file name      
         # generate_RSA(public_key_loc="public_key")
-        # import uuid
-        # filename = str(uuid.uuid4())
-        # json_data = request.get_json(force=True)
-        return generate_RSA()
+        import uuid
+        uuid_ref = str(uuid.uuid4())[:20]
+        return generate_RSA(uuid_ref)
         # parser = reqparse.RequestParser()
         # parser.add_argument('public_key_loc', type=str, location='form', help='public_key_loc cannot be converted')
         # args = parser.parse_args()
@@ -184,7 +190,9 @@ class RSA(Resource):
         # check for client(AES) or comsumer(AES, JWT)
         # decrypt_RSA(package, private_key_loc="private_key")
         json_data = request.get_json(force=True)
-        return decrypt_RSA(json_data['package'])
+        file_name = json_data['secret']
+        uuid_ref = json_data['uuid_ref']
+        return decrypt_RSA(file_name, uuid_ref)
 
         # parser = reqparse.RequestParser()
         # parser.add_argument('package', type=str, location='form', help='package cannot be converted')

@@ -179,7 +179,8 @@
               </div>
               <div class="form-group">
                 <label for="secret">secret:</label>
-                <button ng-click="api().RSAencryption('server', 'secret')" type="button" class="btn btn-link btn-sm">RSA Encryption</button>
+                <button ng-click="api().RSAencryption('server', 'secret', 'publicKey')" type="button" class="btn btn-link btn-sm">RSA Encryption</button>
+                <button ng-click="api().RSAdecryption('server', 'secret', 'publicKey')" type="button" class="btn btn-link btn-sm">RSA Decryption</button>
                 <input type="text" class="form-control" ng-model="form.server.secret" required></input>
               </div>
               <button type="submit" class="btn btn-primary" ng-click="serverRegister(form.server)">Register</button>
@@ -237,8 +238,8 @@
             </ol>
             <form>
               <div class="form-group">
-                <button ng-click="api().RSAencryption('transaction', 'secret')" type="button" class="btn btn-link btn-sm">RSA Encryption</button>
                 <label for="secret">secret:</label>
+                <button ng-click="api().RSAencryption('transaction', 'secret')" type="button" class="btn btn-link btn-sm">RSA Encryption</button>
                 <input type="text" class="form-control" ng-model="form.transaction.secret" required></input>
               </div>
               <div class="form-group">

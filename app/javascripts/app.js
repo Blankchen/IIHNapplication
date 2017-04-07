@@ -125,23 +125,29 @@ myApp.controller('myController', function ($scope, $http) {
         return $http.put(url+"/aes", {secret_key:secret_key, cipher_text:cipher_text });
       },
       // [get] /rsa: for serverRegister and transaction RSA(secret)
-      RSAencryption: function (arg1, ar2) {
-        let message = $scope.form[arg1][ar2];
-        $http.get(url+"/rsa", {params: { message:message }}).then(function(response) {
+      RSAencryption: function (arg1, arg2, arg3) {
+        let message = $scope.form[arg1][arg2];
+        let uuid_ref = $scope.form[arg1][arg3];
+        $http.get(url+"/rsa", {params: { message:message, uuid_ref:uuid_ref }}).then(function(response) {
           console.log("RSAencryption", message, response.data);
-          $scope.form[arg1][ar2] = response.data;
+          $scope.form[arg1][arg2] = response.data;
         });
       },
       // [post] /rsa: generate rsa before serverRegister
-      RSAgenerate: function (arg1, ar2) {
+      RSAgenerate: function (arg1, arg2) {
         $http.post(url+"/rsa").then(function(response) {
           console.log("RSAgenerate", response.data);
-          $scope.form[arg1][ar2] = response.data;
+          $scope.form[arg1][arg2] = response.data;
         });
       },
       // [put] /rsa: after event decrypt RSA(secret)
-      RSAdecryption: function (encryPackage) {
-        return $http.put(url+"/rsa", {package:encryPackage });
+      RSAdecryption: function (arg1, arg2, arg3) {
+        let secret = $scope.form[arg1][arg2];
+        let uuid_ref = $scope.form[arg1][arg3];
+        $http.put(url+"/rsa", { secret:secret, uuid_ref:uuid_ref }).then(function(response) {
+          console.log("RSAdecryption", response.data);
+          $scope.form[arg1][arg2] = response.data;
+        });
       },
       // [put] /mqtt: publish data
       MQTTpublish: function (topic, payload, hostname) {
@@ -275,7 +281,7 @@ myApp.controller('myController', function ($scope, $http) {
     var account = $scope.account.my;
     IIHN.deployed().then(function (instance) {
       meta = instance;
-      return meta.serverRegister(ip, publicKey, secret, { from: account, gas: 50418096 });
+      return meta.serverRegister(ip, publicKey, secret, { from: account, gas: 257715  });
     }).then(function () {
       console.log("Transaction complete!");
       setTimeout(function() {
