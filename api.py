@@ -1,4 +1,4 @@
-from flask import Flask, request, json
+from flask import Flask, request
 from flask_restful import reqparse, abort, Api, Resource
 from flask_cors import CORS
 # from Crypto.Cipher import AES
@@ -10,13 +10,15 @@ import paho.mqtt.client as mqtt
 import os.path
 import datetime
 import jwt
-
+import time
+import os
+import json
 
 app = Flask(__name__)
 CORS(app)
 api = Api(app)
 
-mongoDB = []
+mongoDB = {}
 
 def AES_encryption(secret_key, plain_text):
     # Encryption then return base64 format, key=16 char 
@@ -74,7 +76,7 @@ def encrypt_RSA(message, uuid):
     encrypted = rsakey.encrypt(message)
     
     package = b64encode(encrypted)
-    file_name = package[:20]
+    file_name = package.replace("/","")[:20]
     f = open("keys/"+file_name+"_secret.enc", 'wb')
     f.write(package)
     f.close()
@@ -106,7 +108,7 @@ def issue_JWT(transaction):
     secret by different consumer
     """
     secret = transaction['secret']
-    timestamp = transaction['end']/1000
+    timestamp = int(transaction['end'])
 
     jwt_payload = jwt.encode({
         'transaction': transaction,
@@ -121,10 +123,11 @@ def verify_JWT(jwt_payload):
     try:
         transaction = jwt.decode(jwt_payload, verify=False)
         secret = transaction['transaction']['secret']
-        return jwt.decode(jwt_payload, secret)        
+        jwt.decode(jwt_payload, secret)  
+        return transaction
     except jwt.ExpiredSignatureError:
         # Signature has expired
-        return False
+        return None
 
 # AES class
 class AES(Resource):    
@@ -136,14 +139,25 @@ class AES(Resource):
         parser = reqparse.RequestParser()
         parser.add_argument('secret_key', type=str, location='args', help='secret_key cannot be converted')
         parser.add_argument('plain_text', type=str, location='args', help='plain_text cannot be converted')
+        parser.add_argument('uuid_ref', type=str, location='args', help='uuid_ref cannot be converted')
         args = parser.parse_args()
-        return AES_encryption(args['secret_key'], args['plain_text'])
+        # get secret key from RSA
+        file_name = args['secret_key']
+        uuid_ref = args['uuid_ref']
+        secret_key = decrypt_RSA(file_name, uuid_ref)
+
+        return AES_encryption(secret_key, args['plain_text'])
 
     def put(self):
         # input Public key(Secret) then decryption for AES
         # AES_decryption(secret_key, cipher_text):
         json_data = request.get_json(force=True)
-        return AES_decryption(json_data['secret_key'], json_data['cipher_text'])
+        # get secret key from RSA
+        file_name = json_data['secret_key']
+        uuid_ref = json_data['uuid_ref']
+        secret_key = decrypt_RSA(file_name, uuid_ref)
+
+        return AES_decryption(secret_key, json_data['cipher_text'])
         # parser = reqparse.RequestParser()
         # parser.add_argument('secret_key', type=str, location='form', help='secret_key cannot be converted')
         # parser.add_argument('cipher_text', type=str, location='form', help='cipher_text cannot be converted')
@@ -192,8 +206,11 @@ class RSA(Resource):
         json_data = request.get_json(force=True)
         file_name = json_data['secret']
         uuid_ref = json_data['uuid_ref']
-        return decrypt_RSA(file_name, uuid_ref)
 
+        plain_text = decrypt_RSA(file_name, uuid_ref)
+        # call this api will remove secret file
+        os.remove("keys/"+file_name+"_secret.enc")
+        return plain_text
         # parser = reqparse.RequestParser()
         # parser.add_argument('package', type=str, location='form', help='package cannot be converted')
         # args = parser.parse_args()
@@ -215,10 +232,11 @@ class MQTT(Resource):
         # /mqtt/topic/#
         json_data = request.get_json(force=True)
         print "PUBLISH", json_data['topic'], json_data['payload'] , json_data['hostname']
+        hostname = json_data['hostname'].split(":")[0]
+        # port = int(json_data['hostname'].split(":")[1])
         # AES encrypt or befor by provider
-        publish.single(json_data['topic'], json_data['payload'], qos=1, hostname=json_data['hostname'])
+        publish.single(json_data['topic'], json_data['payload'], qos=1, hostname=hostname)
         return True, 200
-
         # parser = reqparse.RequestParser()
         # parser.add_argument('topic', type=str, location='form', help='topic cannot be converted')
         # parser.add_argument('payload', type=str, location='form', help='payload cannot be converted')
@@ -233,6 +251,13 @@ class MQTT(Resource):
         # input topic then subscript AES data
         # decryption by secret then use mongoDB store data
         # wildcard: /mqtt/topic/#
+        json_data = request.get_json(force=True)
+        # get AES secret key
+        file_name = json_data['secret']
+        uuid_ref = json_data['uuid_ref']
+        self.secret = decrypt_RSA(file_name, uuid_ref)
+        print "SUBSCRIPTION", self.secret
+
         import threading
         t = threading.Thread(target=self.__subscription)
         t.start()
@@ -263,9 +288,24 @@ class MQTT(Resource):
     
     def __on_message(self, client, userdata, msg):
         # The callback for when a PUBLISH message is received from the server.
-        print(msg.topic+" "+str(msg.payload))
+        # print(msg.topic+" "+str(msg.payload))
         # AES decrypt or befor by provider
-        mongoDB.append(msg.payload)
+        try:
+            topic = msg.topic
+            plain_text = AES_decryption(self.secret, msg.payload)
+            print "__on_message: "+topic+" "+plain_text
+            global mongoDB
+            if not mongoDB.get(topic, None):
+                mongoDB[topic] = []    
+
+            mongoDB[topic].append({
+                "payload": plain_text,
+                "timestamp": time.time()
+            })
+
+            print mongoDB
+        except:
+            pass
 
 api.add_resource(MQTT, '/mqtt')
 
@@ -297,14 +337,31 @@ class JWT(Resource):
         # def verify_JWT(jwt_payload):
         
         parser = reqparse.RequestParser()
-        parser.add_argument('jwt_payload', type=str, location='args', help='jwt cannot be converted')
+        parser.add_argument('jwt_payload', type=str, location='args', help='jwt_payload cannot be converted')
+        parser.add_argument('uuid_ref', type=str, location='args', help='uuid_refjwt cannot be converted')
         args = parser.parse_args()
+        # if ok return transaction else None
+        transaction = verify_JWT(args['jwt_payload'])
+        if not transaction:
+            return False, 404 
 
-        if not verify_JWT(args['jwt_payload']):
-            return False, 404
-        
+        topic = transaction['transaction']['topic']
+
+        global mongoDB
         # AES encrypt by comsumer
-        return mongoDB
+        plain_text = mongoDB.get(topic, None)
+        if not plain_text:
+            return [], 200
+
+         # get secret key from RSA
+        file_name = transaction['transaction']['secret']
+        uuid_ref = args['uuid_ref']
+        secret_key = decrypt_RSA(file_name, uuid_ref)
+        print "verify_JWT ", secret_key, topic, plain_text
+        # convert list to string 
+        json_string = json.dumps(plain_text)
+        
+        return AES_encryption(secret_key, json_string)
 
     def post(self):
         """
@@ -322,8 +379,8 @@ class JWT(Resource):
         """
         # input transaction event create JWT after transaction 
         # def issue_JWT(transaction):
-        transaction = request.get_json(force=True)
-
+        json_data = request.get_json(force=True)
+        transaction = json_data["transaction"]
         return issue_JWT(transaction)
 
 

@@ -232,11 +232,10 @@ contract IIHN {
             throw;
  
         // 2. Effects
-        uint startTime = now; 
         // need to check server and client owner
         transactions[transactionKey] = Transaction({
-            start: startTime,
-            end: startTime + _duration*3600,
+            start: now,
+            end: now + _duration*3600,
             comsumer: msg.sender,
             provider: _provider,
             value: msg.value,
@@ -260,7 +259,7 @@ contract IIHN {
             throw;
             
         // evnet
-        TransactionEvent(_secret, startTime, (startTime + _duration),  msg.sender, _provider, msg.value, _ip, _topic);
+        TransactionEvent(_secret, now, (now + _duration*3600),  msg.sender, _provider, msg.value, _ip, _topic);
         
         return true;
     }

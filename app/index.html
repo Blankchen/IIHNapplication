@@ -42,8 +42,9 @@
           </th>
         </tr>
         <tr ng-if="item.owner == selectAccount" ng-repeat="item in events.clientList">
-          <td ng-repeat="(key, value) in item">
-            {{ value }}
+          <td ng-repeat="(key, value) in item" >
+            <span ng-if="key == 'activeTime'">{{ value*1000 | date:'yyyy-MM-dd HH:mm:ss' }}</span>
+            <span ng-if="key != 'activeTime'">{{ value }}</span>
           </td>
         </tr>
       </table>
@@ -59,10 +60,15 @@
           <th ng-repeat="(key, value) in item">
             {{ key }}
           </th>
+          <th>MQTT</th>
         </tr>
         <tr ng-if="item.owner == selectAccount" ng-repeat="item in events.serverList">
           <td ng-repeat="(key, value) in item">
-            {{ value }}
+            <span ng-if="key == 'activeTime'">{{ value*1000 | date:'yyyy-MM-dd HH:mm:ss' }}</span>
+            <span ng-if="key != 'activeTime'">{{ value }}</span>
+          </td>
+          <td>
+            <button class="btn btn-xs btn-info" ng-click="api().MQTTsubscription(item.secret, item.publicKey);">Start</button>
           </td>
         </tr>
       </table>
@@ -78,11 +84,16 @@
           <th ng-repeat="(key, value) in item">
             {{ key }}
           </th>
+          <!--<th>JWT</th>-->
         </tr>
         <tr ng-if="item.provider == selectAccount" ng-repeat="item in events.transactionList">
           <td ng-repeat="(key, value) in item">
-            {{ value }}
+            <span ng-if="key == 'end' || key == 'start'">{{ value*1000 | date:'yyyy-MM-dd HH:mm:ss' }}</span>
+            <span ng-if="key != 'end' && key != 'start'">{{ value }}</span>
           </td>
+          <!--<td>
+            <button class="btn btn-xs btn-info" ng-click="api().JWTissue(item);">Get</button>
+          </td>-->
         </tr>
       </table>
     </div>
@@ -94,45 +105,73 @@
       </uib-accordion-heading>
       <div class="row">
         <div class="col-md-6">
-          <h3>MQTT publish</h3>
-          AES Encryption use client secret
           <div class="panel panel-success">
             <div class="panel-heading">
-              <h3 class="panel-title">Client Register</h3>
+              <h3 class="panel-title">MQTT publish client simulator</h3>
             </div>
             <div class="panel-body">
+              <p>
+                AES Encryption use client secret
+              </p>
               <form>
                 <div class="form-group">
-                  <label for="topic">topic:</label>
-                  <input type="text" class="form-control" ng-model="mqtt.topic" required></input>
+                  <label>Select Client to Publish:</label>
+                  <select class="form-control" 
+                          ng-model="selectMQTTClient" 
+                          ng-change="setMQTTClient(selectMQTTClient)" 
+                          ng-options="client as client.topic for client in events.clientList">
+                  </select>
                 </div>
                 <div class="form-group">
-                  <label for="broker">broker(ip:port):</label>
-                  <input type="text" class="form-control" ng-model="mqtt.broker" required></input>
+                  <label for="topic">Topic:</label>
+                  <input type="text" class="form-control" ng-model="mqtt.topic" readonly></input>
                 </div>
                 <div class="form-group">
-                  <label for="value">payload:</label>
-                  <input type="number" class="form-control" ng-model="mqtt.value" required></input>
+                  <label for="broker">Broker(ip:port):</label>
+                  <input type="text" class="form-control" ng-model="mqtt.broker" readonly></input>
                 </div>
-                <button type="submit" class="btn btn-primary">Register</button>
+                <div class="form-group">
+                  <label for="value">Payload(select client first):</label>
+                  <button ng-click="api().AESencryption('mqtt', 'payload')" type="button" class="btn btn-link btn-sm">AES Encryption</button>
+                  <button ng-click="api().AESdecryption('mqtt', 'payload')" type="button" class="btn btn-link btn-sm">AES Decryption</button>
+                  <textarea rows="5" class="form-control" ng-model="mqtt.payload" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" ng-click="api().MQTTpublish(mqtt.topic, mqtt.payload, mqtt.broker)">Publish</button>
               </form>
             </div>
           </div>
         </div>
-        <div class="col-md-6">
-          <h3>JWT get API</h3>
-          Use transaction JWT get data then AES decryption    
+        <div class="col-md-6">         
           <div class="panel panel-success">
             <div class="panel-heading">
-              <h3 class="panel-title">Client Register</h3>
+              <h3 class="panel-title">JWT get API</h3>
             </div>
             <div class="panel-body">
+              <p>
+                Use transaction JWT get data then AES decryption    
+              </p>
               <form>
                 <div class="form-group">
-                  <label for="topic">jwt_payload:</label>
-                  <input type="text" class="form-control" ng-model="mqtt.jwt_payload" required></input>
+                  <label>Select Transaction get JWT:</label>
+                  <select class="form-control" 
+                          ng-model="selectTransaction" 
+                          ng-change="api().JWTissue(selectTransaction)"   
+                          ng-options="transaction as transaction.topic+' '+transaction.ip for transaction in events.transactionList">
+                  </select>
                 </div>
-                <button type="submit" class="btn btn-primary">Register</button>
+                <div class="form-group">
+                  <label for="topic">jwt_payload(select transaction first):</label>
+                  <input type="text" class="form-control" ng-model="jwt.jwt_payload" readonly></input>
+                </div>
+                <button type="submit" class="btn btn-primary" ng-click="api().JWTverifyAPI(jwt.jwt_payload, jwt.uuid_ref)">Query</button>
+                <div class="form-group">
+                  <label for="value">API result:</label>
+                  <!--<button ng-click="api().AESencryption('jwt', 'json_data')" type="button" class="btn btn-link btn-sm">AES Encryption</button>-->
+                  <button ng-click="api().AESdecryption('jwt', 'json_data')" type="button" class="btn btn-link btn-sm">AES Decryption</button>
+                  <button ng-click="jsonParser()" type="button" class="btn btn-link btn-sm">JSON Parse</button>
+                  <!--<textarea rows="5" class="form-control" ng-model="jwt.payload" required></textarea>-->
+                  <pre>{{ jwt.json_data | json }}</pre>
+                </div>
               </form>
             </div>
           </div>      
@@ -165,7 +204,7 @@
             </ol>
             <form>
               <div class="form-group">
-                <label for="ip">ip:</label>
+                <label for="ip">IP Addres:</label>
                 <input type="text" class="form-control" ng-model="form.server.ip" required></input>
               </div>
               <!--<div class="form-group">
@@ -173,12 +212,12 @@
                 <input type="text" class="form-control" ng-model="form.server.topic" required></input>
               </div>-->
               <div class="form-group">
-                <label for="publicKey">publicKey:</label>
+                <label for="publicKey">Public Key Reference:</label>
                 <button ng-click="api().RSAgenerate('server', 'publicKey')" type="button" class="btn btn-link btn-sm">RSA Public Key</button>
                 <input type="text" class="form-control" ng-model="form.server.publicKey" required></input>
               </div>
               <div class="form-group">
-                <label for="secret">secret:</label>
+                <label for="secret">Secret Reference(set public key first):</label>
                 <button ng-click="api().RSAencryption('server', 'secret', 'publicKey')" type="button" class="btn btn-link btn-sm">RSA Encryption</button>
                 <button ng-click="api().RSAdecryption('server', 'secret', 'publicKey')" type="button" class="btn btn-link btn-sm">RSA Decryption</button>
                 <input type="text" class="form-control" ng-model="form.server.secret" required></input>
@@ -202,19 +241,19 @@
             </ol>
             <form>
               <div class="form-group">
-                <label for="ip">ip(server):</label>
+                <label for="ip">IP Addres (Server):</label>
                 <input type="text" class="form-control" ng-model="form.client.ip" required></input>
               </div>
               <div class="form-group">
-                <label for="topic">topic:</label>
+                <label for="topic">MQTT Topic:</label>
                 <input type="text" class="form-control" ng-model="form.client.topic" required></input>
               </div>
               <div class="form-group">
-                <label for="broker">broker(ip:port):</label>
+                <label for="broker">MQTT Broker (ip:port):</label>
                 <input type="text" class="form-control" ng-model="form.client.broker" required></input>
               </div>
               <div class="form-group">
-                <label for="value">value(hours):</label>
+                <label for="value">Price per hour:</label>
                 <input type="number" class="form-control" ng-model="form.client.value" required></input>
               </div>
               <button type="submit" class="btn btn-primary" ng-click="clientRegister(form.client)">Register</button>
@@ -238,32 +277,40 @@
             </ol>
             <form>
               <div class="form-group">
-                <label for="secret">secret:</label>
-                <button ng-click="api().RSAencryption('transaction', 'secret')" type="button" class="btn btn-link btn-sm">RSA Encryption</button>
+                <label>Select Client to Transaction:</label>
+                <select class="form-control" 
+                        ng-model="selectTxClient" 
+                        ng-change="setTransaction(selectTxClient)" 
+                        ng-options="client as client.topic for client in events.clientList">
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="secret">Secret Reference(select client first):</label>
+                <button ng-click="api().RSAencryption('transaction', 'secret', 'publicKey')" type="button" class="btn btn-link btn-sm">RSA Encryption</button>
+                <button ng-click="api().RSAdecryption('transaction', 'secret', 'publicKey')" type="button" class="btn btn-link btn-sm">RSA Decryption</button>
                 <input type="text" class="form-control" ng-model="form.transaction.secret" required></input>
               </div>
               <div class="form-group">
                 <label for="duration">duration(hours):</label>
-                <input type="number" class="form-control" ng-model="form.transaction.duration" required></input>
+                <input type="number" class="form-control" ng-model="form.transaction.duration" ng-change="setTransaction(selectTxClient)" required></input>
               </div>
               <div class="form-group">
                 <label for="provider">provider:</label>
-                <input type="text" class="form-control" ng-model="form.transaction.provider" required></input>
+                <input type="text" class="form-control" ng-model="form.transaction.provider" readonly></input>
               </div>
               <div class="form-group">
                 <label for="ip">ip:</label>
-                <input type="text" class="form-control" ng-model="form.transaction.ip" required></input>
+                <input type="text" class="form-control" ng-model="form.transaction.ip" readonly></input>
               </div>
               <div class="form-group">
                 <label for="topic">topic:</label>
-                <input type="text" class="form-control" ng-model="form.transaction.topic" required></input>
+                <input type="text" class="form-control" ng-model="form.transaction.topic" readonly></input>
               </div> 
               <div class="form-group">
                 <label for="value">value(value/hours): client(topic).value*duration </label>
-                <input type="number" class="form-control" ng-model="form.transaction.value" required></input>
+                <input type="number" class="form-control" ng-model="form.transaction.value" readonly></input>
               </div>
-              <button type="submit" class="btn btn-primary" ng-click="transaction(form.transaction)">Transaction</button>
-              Then get JWT
+              <button type="submit" class="btn btn-primary" ng-click="transaction(form.transaction)">Transaction</button>              
             </form>
           </div>
         </div>

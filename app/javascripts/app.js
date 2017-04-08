@@ -42,6 +42,12 @@ myApp.controller('myController', function ($scope, $http) {
   }
   // ng model for account filter
   $scope.selectAccount = '';
+  // ng model for transaction
+  $scope.selectTxClient = undefined;
+  // ng model for mqtt client
+  $scope.selectMQTTClient = undefined;
+  // ng model for transaction
+  $scope.selectTransaction = undefined;
   // variable
   $scope.account = {
     my: '',
@@ -57,13 +63,19 @@ myApp.controller('myController', function ($scope, $http) {
   // form model
   $scope.form = {
     client: {
+      ip: "140.118.109.35",
       broker: "140.118.109.35:1883"
     },
     clientDelete: {},
-    server: {},
+    server: {
+      ip: "140.118.109.35"
+    },
     serverDelete: {},
     transaction: {} 
   }
+  //  MQTTpublish & jwt
+  $scope.mqtt = {};
+  $scope.jwt = {};
   // function
   $scope.serverRegister = serverRegister;
   $scope.serverDelete = serverDelete;
@@ -71,17 +83,19 @@ myApp.controller('myController', function ($scope, $http) {
   $scope.clientDelete = clientDelete;
   $scope.transaction = transaction;
   $scope.api = api;  
-  //  MQTTpublish & jwt
-  $scope.mqtt = {};
-  $scope.jwt = {};
-
+  $scope.setTransaction = setTransaction;
+  $scope.setMQTTClient = setMQTTClient;
+  $scope.jsonParser = jsonParser;
+  
   activate();
 
   function activate() {
     start();
 
-    setEventInfo();
     eventFilter();
+    setTimeout(function() {
+      setEventInfo();
+    }, 1000); 
   }
 
   function start() {
@@ -104,6 +118,7 @@ myApp.controller('myController', function ($scope, $http) {
       // console.log(accs);
       $scope.account.list = accs;
       $scope.account.my = accs[0];
+      $scope.selectAccount = accs[0];
       
       let balance = web3.eth.getBalance(accs[0]);
       $scope.account.myBalance = balance.plus(21).toString(10);
@@ -117,17 +132,32 @@ myApp.controller('myController', function ($scope, $http) {
     let url = "http://127.0.0.1:5000";
     return {
       // [get] /aes: for MQTT publish 
-      AESencryption: function (secret_key, plain_text) {
-        return $http.get(url+"/aes", {params: { secret_key:secret_key, plain_text:plain_text }});
+      AESencryption: function (arg1, arg2) {
+        let secret_key = $scope[arg1].secret;
+        let uuid_ref = $scope[arg1].uuid_ref;
+        let plain_text = $scope[arg1][arg2];
+        if(!secret_key || !uuid_ref || !plain_text) return;
+        $http.get(url+"/aes", {params: { secret_key:secret_key, plain_text:plain_text, uuid_ref:uuid_ref }}).then(function(response) {
+          console.log("AESencryption", response.data);
+          $scope[arg1][arg2] = response.data;
+        });
       },
       // [put] /aes: for JWT get API
-      AESdecryption: function (secret_key, cipher_text) {
-        return $http.put(url+"/aes", {secret_key:secret_key, cipher_text:cipher_text });
+      AESdecryption: function (arg1, arg2) {
+        let secret_key = $scope[arg1].secret;
+        let uuid_ref = $scope[arg1].uuid_ref;
+        let cipher_text = $scope[arg1][arg2];
+        if(!secret_key || !uuid_ref || !cipher_text) return;
+        $http.put(url+"/aes", {secret_key:secret_key, cipher_text:cipher_text, uuid_ref:uuid_ref }).then(function(response) {
+          console.log("AESencryption", response.data);
+          $scope[arg1][arg2] = response.data;
+        });
       },
       // [get] /rsa: for serverRegister and transaction RSA(secret)
       RSAencryption: function (arg1, arg2, arg3) {
         let message = $scope.form[arg1][arg2];
         let uuid_ref = $scope.form[arg1][arg3];
+        if (!message || !uuid_ref) return;
         $http.get(url+"/rsa", {params: { message:message, uuid_ref:uuid_ref }}).then(function(response) {
           console.log("RSAencryption", message, response.data);
           $scope.form[arg1][arg2] = response.data;
@@ -144,6 +174,7 @@ myApp.controller('myController', function ($scope, $http) {
       RSAdecryption: function (arg1, arg2, arg3) {
         let secret = $scope.form[arg1][arg2];
         let uuid_ref = $scope.form[arg1][arg3];
+        if (!secret || !uuid_ref) return;
         $http.put(url+"/rsa", { secret:secret, uuid_ref:uuid_ref }).then(function(response) {
           console.log("RSAdecryption", response.data);
           $scope.form[arg1][arg2] = response.data;
@@ -151,35 +182,78 @@ myApp.controller('myController', function ($scope, $http) {
       },
       // [put] /mqtt: publish data
       MQTTpublish: function (topic, payload, hostname) {
-        return $http.put(url+"/mqtt", {topic:topic, payload:payload, hostname:hostname });
+        $http.put(url+"/mqtt", {topic:topic, payload:payload, hostname:hostname }).then(function(response) {
+          console.log("MQTTpublish", response.data);
+        });
       },
       // [post] /mqtt: subscript data after serverRegister event
-      MQTTsubscription: function () {
-        return $http.post(url+"/mqtt");
+      MQTTsubscription: function (secret, uuid_ref) {
+        if (!secret || !uuid_ref) return;
+        $http.post(url+"/mqtt", { secret:secret, uuid_ref:uuid_ref }).then(function(response) {
+          console.log("MQTTsubscription", response.data);
+        });
       },
       // [get] /jwt: jwt API get mqtt data
-      JWTverifyAPI: function (jwt_payload) {
-        return $http.get(url+"/jwt", {params: {jwt_payload:jwt_payload }});
+      JWTverifyAPI: function (jwt_payload, uuid_ref) {
+        if (!jwt_payload || !uuid_ref) return;
+        $http.get(url+"/jwt", {params: {jwt_payload:jwt_payload, uuid_ref:uuid_ref }}).then(function(response) {
+          console.log("JWTverifyAPI", response.data);
+          $scope.jwt["json_data"] = response.data;
+        });
       },
       // [post] /jwt: issue jwt after transaction event
       JWTissue: function (transaction) {
-        return $http.post(url+"/jwt", {transaction:transaction });
+        // set secret when select chenage
+        $scope.jwt["uuid_ref"] = $scope.events.serverList[transaction.ip].publicKey; 
+        $scope.jwt["secret"] = transaction.secret;
+        console.log("JWTissue uuid_ref", $scope.jwt);
+        $http.post(url+"/jwt", {transaction:transaction }).then(function(response) {
+          console.log("JWTissue", response.data);
+          $scope.jwt["jwt_payload"] = response.data;
+        });
       },
     }           
   }
 
-  api().AESencryption('secret', 'test')
-    .then(function(response) {
-       let cipher_text = response.data;
-       console.log('===', cipher_text);
+  function setTransaction(client) {
+    if (!client) return;
+    // set transaction from client
+    let secret = $scope.form.transaction.secret;
+    let duration = $scope.form.transaction.duration;
+    let value = duration? +client.value*duration:+client.value;
+    // hide form value
+    let publicKey = $scope.events.serverList[client.ip].publicKey;
+    $scope.form.transaction = {
+      secret: secret,
+      duration: duration,
+      provider: client.owner,
+      ip: client.ip,
+      topic: client.topic,
+      value: value,
+      publicKey: publicKey
+    };
+    console.log("setTransaction", $scope.form.transaction);
+  }
 
-       api().AESdecryption('secret', cipher_text)
-        .then(function(response) {
-          let plain_text = response.data;
-          console.log('===', plain_text);
-        });;
-    });
+  function setMQTTClient(client) {
+    if (!client) return;
+    let payload = $scope.mqtt.payload;
+    // hide form value
+    let secret = $scope.events.serverList[client.ip].secret;    
+    let uuid_ref = $scope.events.serverList[client.ip].publicKey; 
+    $scope.mqtt = {
+      topic: client.topic,
+      broker: client.broker,
+      payload: payload,
+      secret: secret,
+      uuid_ref: uuid_ref
+    }
+    console.log("setMQTTClient", $scope.mqtt);
+  }
 
+  function jsonParser() {
+    $scope.jwt.json_data = angular.fromJson($scope.jwt.json_data);
+  }
 
   function db() {
     const serverKey = 'serverKey';
@@ -205,7 +279,7 @@ myApp.controller('myController', function ($scope, $http) {
         return clientDict;
       },
       clientInsert: function (data) {
-        clientDict[data.topic] = data;
+        clientDict[data.topic] = data;        
         localStorage.setItem(clientKey, JSON.stringify(clientDict));
       },
       clientDelete: function (data) {
@@ -216,8 +290,11 @@ myApp.controller('myController', function ($scope, $http) {
         return transactionDict;
       },
       transactionInsert: function (data) {
-        transactionDict[data.transactionKey] = data;
+        transactionDict[data.secret] = data;
         localStorage.setItem(transactionKey, JSON.stringify(transactionDict));
+        // add client score
+        clientDict[data.topic].score = parseInt(clientDict[data.topic].score) + 1;
+        localStorage.setItem(clientKey, JSON.stringify(clientDict));
       }
     }
   }
@@ -284,6 +361,10 @@ myApp.controller('myController', function ($scope, $http) {
       return meta.serverRegister(ip, publicKey, secret, { from: account, gas: 257715  });
     }).then(function () {
       console.log("Transaction complete!");
+      // creat MQTT if transaction ok
+      api().MQTTsubscription(secret, publicKey);
+      // need response
+
       setTimeout(function() {
         setEventInfo();
       }, 1000);      
