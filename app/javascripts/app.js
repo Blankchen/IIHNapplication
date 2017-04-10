@@ -24,7 +24,7 @@ var myApp = angular.module('myApp', ['ngAnimate', 'ngSanitize', 'ui.bootstrap'])
 
 //  python api.py
 
-myApp.controller('myController', function ($scope, $http) {
+myApp.controller('myController', function ($scope, $http, $timeout) {
   // smart contract
   var IIHN = contract(IIHN_artifacts);
   // var accounts;
@@ -95,6 +95,11 @@ myApp.controller('myController', function ($scope, $http) {
   $scope.setTransaction = setTransaction;
   $scope.setMQTTClient = setMQTTClient;
   $scope.jsonParser = jsonParser;
+  // ajax alert message
+  $scope.alerts = [];
+  $scope.closeAlert = function(index) {
+    $scope.alerts.splice(index, 1);
+  };
   
   activate();
 
@@ -214,6 +219,9 @@ myApp.controller('myController', function ($scope, $http) {
         $http.get(url+"/jwt", {params: {jwt_payload:jwt_payload, uuid_ref:uuid_ref }}).then(function(response) {
           console.log("JWTverifyAPI", response.data);
           $scope.jwt["json_data"] = response.data;
+        }, function(response) {
+          //Second function handles error
+          addAlert({ type: 'danger', msg: "JWT veryfy error; see log." })
         });
       },
       // [post] /jwt: issue jwt after transaction event
@@ -370,6 +378,7 @@ myApp.controller('myController', function ($scope, $http) {
     var secret = model.secret;
 
     console.log("Initiating transaction... (please wait)", model);
+    addAlert({ type: 'info', msg: "Initiating transaction... (please wait)" })
 
     var meta;
     var account = $scope.account.my;
@@ -378,6 +387,7 @@ myApp.controller('myController', function ($scope, $http) {
       return meta.serverRegister(ip, publicKey, secret, { from: account, gas: 257715  });
     }).then(function () {
       console.log("Transaction complete!");
+      addAlert({ type: 'success', msg: "Transaction complete!" })
       // creat MQTT if transaction ok
       api().MQTTsubscription(secret, publicKey);
       // need response
@@ -388,6 +398,7 @@ myApp.controller('myController', function ($scope, $http) {
     }).catch(function (e) {
       console.log(e);
       console.log("Error serverRegister; see log.");
+      addAlert({ type: 'danger', msg: "Error serverRegister; see log." })
     });
   }
 
@@ -395,6 +406,7 @@ myApp.controller('myController', function ($scope, $http) {
     var ip = model.ip;
 
     console.log("Initiating transaction... (please wait)", model);
+    addAlert({ type: 'info', msg: "Initiating transaction... (please wait)" })
 
     var meta;
     var account = $scope.account.my;
@@ -403,12 +415,14 @@ myApp.controller('myController', function ($scope, $http) {
       return meta.serverDelete(ip, { from: account, gas: 185145 });
     }).then(function () {
       console.log("Transaction complete!");
+      addAlert({ type: 'success', msg: "Transaction complete!" })
       setTimeout(function() {
         setEventInfo();
       }, 1000); 
     }).catch(function (e) {
       console.log(e);
       console.log("Error serverDelete; see log.");
+      addAlert({ type: 'danger', msg: "Error serverDelete; see log." })
     });
   }
 
@@ -421,6 +435,7 @@ myApp.controller('myController', function ($scope, $http) {
     var value = model.value;
 
     console.log("Initiating transaction... (please wait)", model);
+    addAlert({ type: 'info', msg: "Initiating transaction... (please wait)" })
 
     var meta;
     var account = $scope.account.my;
@@ -429,12 +444,14 @@ myApp.controller('myController', function ($scope, $http) {
       return meta.clientRegister(ip, topic, broker, value, { from: account, gas: 247758 });
     }).then(function () {
       console.log("Transaction complete!");
+      addAlert({ type: 'success', msg: "Transaction complete!" })
       setTimeout(function() {
         setEventInfo();
       }, 1000); 
     }).catch(function (e) {
       console.log(e);
       console.log("Error clientRegister; see log.");
+      addAlert({ type: 'danger', msg: "Error clientRegister; see log." })
     });
   }
 
@@ -445,6 +462,7 @@ myApp.controller('myController', function ($scope, $http) {
     var topic = model.topic;
 
     console.log("Initiating transaction... (please wait)", model);
+    addAlert({ type: 'info', msg: "Initiating transaction... (please wait)" })
 
     var meta;
     var account = $scope.account.my;
@@ -453,12 +471,14 @@ myApp.controller('myController', function ($scope, $http) {
       return meta.clientDelete(ip, topic, { from: account, gas: 95145 });
     }).then(function () {
       console.log("Transaction complete!");
+      addAlert({ type: 'success', msg: "Transaction complete!" })
       setTimeout(function() {
         setEventInfo();
       }, 1000); 
     }).catch(function (e) {
       console.log(e);
       console.log("Error clientDelete; see log.");
+      addAlert({ type: 'danger', msg: "Error clientDelete; see log." })
     });
   }
 
@@ -473,6 +493,7 @@ myApp.controller('myController', function ($scope, $http) {
     var value = model.value;
 
     console.log("Initiating transaction... (please wait)", model);
+    addAlert({ type: 'info', msg: "Initiating transaction... (please wait)" })
 
     var meta;
     var account = $scope.account.my;
@@ -481,15 +502,25 @@ myApp.controller('myController', function ($scope, $http) {
       return meta.transaction(secret, duration, provider, ip, topic, { from: account, gas: 535610, value: value });
     }).then(function () {
       console.log("Transaction complete!");
+      addAlert({ type: 'success', msg: "Transaction complete!" })
       setTimeout(function() {
         setEventInfo();
       }, 1000); 
     }).catch(function (e) {
       console.log(e);
       console.log("Error transaction; see log.");
+      addAlert({ type: 'danger', msg: "Error transaction; see log." })
     });
   }
 
+  function addAlert(alert) {
+    // { type: 'danger', msg: 'Oh snap! Change a few things up and try submitting again.' },
+    // { type: 'success', msg: 'Well done! You successfully read this important alert message.' }
+    $scope.alerts.push(alert);
+    $timeout(function() {
+      $scope.alerts.shift();
+    }, 3000);
+  };
 
 });
 

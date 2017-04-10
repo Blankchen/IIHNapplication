@@ -9,9 +9,25 @@
   <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
   <script src="./app.js"></script>
   <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .fixed-alert {
+      position: fixed;
+      width: 50%;
+      /* height: 200px; */
+      margin: 5% auto;
+      left: 0;
+      right: 0;
+      z-index: 100;
+    }
+  </style>
 </head>
 <body ng-app="myApp">
   <div ng-controller="myController" class="container theme-showcase" role="main" ng-cloak>
+    
+    <!-- Alert message when ajax -->
+    <div class="fixed-alert" ng-if="alerts.length > 0">
+      <div uib-alert ng-repeat="alert in alerts" ng-class="'alert-' + (alert.type || 'warning')" close="closeAlert($index)">{{alert.msg}}</div>
+    </div>
 
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div class="jumbotron">
@@ -54,10 +70,10 @@
     
     <div class="row">
       <div class="btn-group btn-group-justified">
-        <a class="btn btn-primary" ng-click="collapse.isClient = !collapse.isClient">Client Event List</a>
-        <a class="btn btn-primary" ng-click="collapse.isServer = !collapse.isServer">Server Event List</a>
-        <a class="btn btn-primary" ng-click="collapse.isTransaction = !collapse.isTransaction">Transaction Event List</a>
-        <a class="btn btn-primary" ng-click="collapse.isOthers = !collapse.isOthers">MQTT Client Simulator & Call API by JWT</a>
+        <a class="btn" ng-class="{'btn-primary': !collapse.isClient, 'btn-default': collapse.isClient}" ng-click="collapse.isClient = !collapse.isClient">Client Event List</a>
+        <a class="btn" ng-class="{'btn-primary': !collapse.isServer, 'btn-default': collapse.isServer}" ng-click="collapse.isServer = !collapse.isServer">Server Event List</a>
+        <a class="btn" ng-class="{'btn-primary': !collapse.isTransaction, 'btn-default': collapse.isTransaction}" ng-click="collapse.isTransaction = !collapse.isTransaction">Transaction Event List</a>
+        <a class="btn" ng-class="{'btn-primary': !collapse.isOthers, 'btn-default': collapse.isOthers}" ng-click="collapse.isOthers = !collapse.isOthers">MQTT Client Simulator & Call API by JWT</a>
       </div>
       <hr>
       <div uib-collapse="collapse.isClient">

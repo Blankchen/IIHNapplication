@@ -109,7 +109,7 @@ def issue_JWT(transaction):
     """
     secret = transaction['secret']
     # add 28800 timezone
-    timestamp = int(transaction['end']) + 28800
+    timestamp = int(transaction['end'])
 
     jwt_payload = jwt.encode({
         'transaction': transaction,
