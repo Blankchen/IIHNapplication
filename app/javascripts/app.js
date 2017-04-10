@@ -38,7 +38,8 @@ myApp.controller('myController', function ($scope, $http) {
   } else {
     console.warn("No web3 detected. Falling back to http://localhost:8545. You should remove this fallback when you deploy live, as it's inherently insecure. Consider switching to Metamask for development. More info here: http://truffleframework.com/tutorials/truffle-and-metamask");
     // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
-    window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+    // window.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+    window.web3 = new Web3(new Web3.providers.HttpProvider("http://140.118.109.35:8545"));
   }
   // ng model for account filter
   $scope.selectAccount = '';
@@ -60,6 +61,13 @@ myApp.controller('myController', function ($scope, $http) {
     serverList: [],
     transactionList: [] 
   };
+  // (ui.bootstrap.collapse)
+  $scope.collapse = {
+    isClient: true,
+    isServer: true,
+    isTransaction: true,
+    isOthers: true
+  }
   // form model
   $scope.form = {
     client: {
@@ -82,6 +90,7 @@ myApp.controller('myController', function ($scope, $http) {
   $scope.clientRegister = clientRegister;
   $scope.clientDelete = clientDelete;
   $scope.transaction = transaction;
+  $scope.getBalance = getBalance;
   $scope.api = api;  
   $scope.setTransaction = setTransaction;
   $scope.setMQTTClient = setMQTTClient;
@@ -113,19 +122,25 @@ myApp.controller('myController', function ($scope, $http) {
         alert("Couldn't get any accounts! Make sure your Ethereum client is configured correctly.");
         return;
       }
-      // accounts = accs;
-      // account = accounts[0];    
-      // console.log(accs);
+      // get account list 10
       $scope.account.list = accs;
+      // set default account
       $scope.account.my = accs[0];
+      // set filter account
       $scope.selectAccount = accs[0];
       
-      let balance = web3.eth.getBalance(accs[0]);
-      $scope.account.myBalance = balance.plus(21).toString(10);
+       getBalance();
+      // let balance = web3.eth.getBalance(accs[0]);
+      // $scope.account.myBalance = balance.plus(21).toString(10);
       // console.log( $scope.account);
       $scope.$apply();
     });
-    
+  }
+
+  function getBalance() {
+    let account = $scope.account.my;
+    let balance = web3.eth.getBalance(account);
+    $scope.account.myBalance = balance.plus(21).toString(10);
   }
 
   function api() {
@@ -303,6 +318,8 @@ myApp.controller('myController', function ($scope, $http) {
     $scope.events.clientList = db().clientRead();
     $scope.events.serverList = db().serverRead();
     $scope.events.transactionList = db().transactionRead();
+    // get balance again
+    getBalance()
     $scope.$applyAsync();
   }
 
