@@ -15,7 +15,7 @@ var myApp = angular.module('myApp', ['ngAnimate', 'ngSanitize', 'ui.bootstrap'])
 
 
 // C:\Users\Blank\Blockchain  (truffle-init-webpack@0.0.1)
-// testrpc.cmd
+// testrpc.cmd --db="C:\Users\Blank\Blockchain\db"
 // truffle.cmd compile
 // truffle.cmd migrate --reset
 // npm run build
@@ -23,6 +23,8 @@ var myApp = angular.module('myApp', ['ngAnimate', 'ngSanitize', 'ui.bootstrap'])
 // http://localhost:8080/index.html
 
 //  python api.py
+
+// restart clean browser localstorage, keys folder
 
 myApp.controller('myController', function ($scope, $http, $timeout) {
   // smart contract
@@ -149,7 +151,7 @@ myApp.controller('myController', function ($scope, $http, $timeout) {
   }
 
   function api() {
-    let url = "http://127.0.0.1:5000";
+    let url = "http://140.118.109.35:5000";
     return {
       // [get] /aes: for MQTT publish 
       AESencryption: function (arg1, arg2) {
@@ -204,6 +206,7 @@ myApp.controller('myController', function ($scope, $http, $timeout) {
       MQTTpublish: function (topic, payload, hostname) {
         $http.put(url+"/mqtt", {topic:topic, payload:payload, hostname:hostname }).then(function(response) {
           console.log("MQTTpublish", response.data);
+          addAlert({ type: 'success', msg: "MQTT start publish data." })
         });
       },
       // [post] /mqtt: subscript data after serverRegister event
@@ -211,6 +214,7 @@ myApp.controller('myController', function ($scope, $http, $timeout) {
         if (!secret || !uuid_ref) return;
         $http.post(url+"/mqtt", { secret:secret, uuid_ref:uuid_ref }).then(function(response) {
           console.log("MQTTsubscription", response.data);
+          addAlert({ type: 'success', msg: "MQTT start subscript data." })
         });
       },
       // [get] /jwt: jwt API get mqtt data

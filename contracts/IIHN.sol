@@ -22,12 +22,12 @@ contract IIHN {
     struct Transaction {
         uint start; // start timestamp
         uint end; // end timestamp
-        address comsumer;
+        address consumer;
         address provider;
         uint value; // currency record
         string ip; // for api ip
         string topic; // for data
-        string secret; // comsumer set encrption by MachineServer publicKey
+        string secret; // consumer set encrption by MachineServer publicKey
     }
     
     // secure by username, password
@@ -236,7 +236,7 @@ contract IIHN {
         transactions[transactionKey] = Transaction({
             start: now,
             end: now + _duration*3600,
-            comsumer: msg.sender,
+            consumer: msg.sender,
             provider: _provider,
             value: msg.value,
             ip: _ip,
@@ -245,9 +245,9 @@ contract IIHN {
         });
         
         // add transaction key to both people
-        People comsumer = peoples[msg.sender];
+        People consumer = peoples[msg.sender];
         
-        comsumer.consumerKeys.push(transactionKey);
+        consumer.consumerKeys.push(transactionKey);
         provider.providerKeys.push(transactionKey);
         
         // add score

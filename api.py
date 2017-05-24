@@ -388,6 +388,9 @@ class JWT(Resource):
 api.add_resource(JWT, '/jwt')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # develop
+    # app.run(debug=True)
+    # prod
+    app.run(host= '140.118.109.35', port=5000, debug=False)
 
 
