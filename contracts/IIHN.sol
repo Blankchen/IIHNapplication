@@ -216,20 +216,22 @@ contract IIHN {
         // ######################### check value and duration???????????????????
 
         // transactionKeys ## keccak256(...) returns (bytes32) as secret("string", consumerAddress)
-        bytes32 transactionKey = keccak256(_secret, msg.sender);
+        bytes32 transactionKey = keccak256(now, msg.sender);
         Transaction transaction = transactions[transactionKey];
         
         // 1. Conditions
         // already have transaction
-        if (now <= transaction.end)
-            throw;
+        // @test
+        // if (now <= transaction.end)
+        //     throw;
             
         People provider = peoples[_provider];
         uint value = provider.machineClients[_topic].value;
         
         // if no enough price (value per hour)
-        if (msg.value != _duration*value)
-            throw;
+        // @test
+        // if (msg.value != _duration*value)
+        //     throw;
  
         // 2. Effects
         // need to check server and client owner

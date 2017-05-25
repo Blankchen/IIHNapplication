@@ -106,6 +106,7 @@ myApp.controller('myController', function ($scope, $http, $timeout) {
   activate();
 
   function activate() {
+    localStorage.clear();
     start();
 
     eventFilter();
