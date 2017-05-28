@@ -387,6 +387,43 @@ class JWT(Resource):
 
 api.add_resource(JWT, '/jwt')
 
+
+# load test
+class LoadTest(Resource):
+    def post(self):
+        """
+            four type
+            {
+                transaction: http://140.118.109.35:5000/jwt                   
+                    {"transaction":{"secret":"e3YYkfek6UIOPxOW0Mly","start":"1495984407","end":"1495988007","consumer":"0x0ea97029eb84079d6b58e1d35057f863b0ff24f1","provider":"0x0ea97029eb84079d6b58e1d35057f863b0ff24f1","value":"1","ip":"140.118.109.35","topic":"mqtt/sensor"}}
+                sc_rsa: 'T/F',
+                sc-jwt: 'T/F',
+            }
+        """
+        json_data = request.get_json(force=True)
+        transaction = json_data["transaction"]
+        sc_rsa = json_data["sc_rsa"]
+        sc_jwt = json_data["sc_jwt"]
+
+        result = None
+        # 1.sc_rsa: RSA_encryption(key reference) -> post.json(transaction) -> ... end to 2
+        
+        if sc_rsa == 'T':
+            result = encrypt_RSA("12345678901234567890", "8794808d-42e6-412e-9")
+
+        # smart contract: testrpc json-rpc
+        import requests
+        payload = {"jsonrpc":"2.0","method":"eth_sendTransaction","params":[{"from":"0x0ea97029eb84079d6b58e1d35057f863b0ff24f1","gas":"0x82c3a","value":"0x1","to":"0x9bcf481d15332a37247f0b54418977468a9762f1","data":"0x5cb3a9aa00000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000ea97029eb84079d6b58e1d35057f863b0ff24f100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000014653359596b66656b3655494f50784f57304d6c79000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e3134302e3131382e3130392e3335000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b6d7174742f73656e736f72000000000000000000000000000000000000000000"}],"id":4781}
+        result = requests.post("http://140.118.109.35:8545", json=payload)
+
+        # 2.sc_jwt: transaction -> issue_jwt(_) -> return
+        if sc_jwt == 'T':
+            result = issue_JWT(transaction)
+        
+        return result
+
+api.add_resource(LoadTest, '/load-test')
+
 if __name__ == '__main__':
     # develop
     # app.run(debug=True)
