@@ -256,8 +256,10 @@ class MQTT(Resource):
         # get AES secret key
         file_name = json_data['secret']
         uuid_ref = json_data['uuid_ref']
-        self.secret = decrypt_RSA(file_name, uuid_ref)
-        print "SUBSCRIPTION", self.secret
+
+        # @Test disable
+        # self.secret = decrypt_RSA(file_name, uuid_ref)
+        # print "SUBSCRIPTION", self.secret
 
         import threading
         t = threading.Thread(target=self.__subscription)
@@ -293,7 +295,10 @@ class MQTT(Resource):
         # AES decrypt or befor by provider
         try:
             topic = msg.topic
+            # @Test disable
             plain_text = AES_decryption(self.secret, msg.payload)
+            # plain_text = msg.payload
+
             print "__on_message: "+topic+" "+plain_text
             global mongoDB
             if not mongoDB.get(topic, None):
@@ -408,12 +413,12 @@ class LoadTest(Resource):
         # 1.sc_rsa: RSA_encryption(key reference) -> post.json(transaction) -> ... end to 2
         
         if sc_rsa == 'T':
-            result = encrypt_RSA("12345678901234567890", "8794808d-42e6-412e-9")
+            result = encrypt_RSA("12345678901234567890", "e37f33fe-6f31-4844-9")
             # return result
 
         # smart contract: testrpc json-rpc
         import requests
-        payload = {"jsonrpc":"2.0","method":"eth_sendTransaction","params":[{"from":"0x0ea97029eb84079d6b58e1d35057f863b0ff24f1","gas":"0x82c3a","value":"0x1","to":"0x9bcf481d15332a37247f0b54418977468a9762f1","data":"0x5cb3a9aa00000000000000000000000000000000000000000000000000000000000000a000000000000000000000000000000000000000000000000000000000000000010000000000000000000000000ea97029eb84079d6b58e1d35057f863b0ff24f100000000000000000000000000000000000000000000000000000000000000e000000000000000000000000000000000000000000000000000000000000001200000000000000000000000000000000000000000000000000000000000000014653359596b66656b3655494f50784f57304d6c79000000000000000000000000000000000000000000000000000000000000000000000000000000000000000e3134302e3131382e3130392e3335000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000b6d7174742f73656e736f72000000000000000000000000000000000000000000"}],"id":4781}
+        payload = {"jsonrpc":"2.0","method":"eth_getTransactionReceipt","params":["0xccab1901536c26658e03568d939fe67243f59a715044fb54cc895620b89b2d2a"],"id":2281}
         r = requests.post("http://140.118.109.35:8545", json=payload)
         result = {"SC": str(r)}
         
