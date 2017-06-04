@@ -396,18 +396,27 @@ api.add_resource(JWT, '/jwt')
 # load test
 """
 # Smart Contract: RSA(T/F), Transaction, JWT(T/F)
-Register Server > Client > Transaction 
-Secret Key referance: 12345678901234567890
-Topic: mqtt/sensor
-Value: 1
+-> Register Server  
+    Public Key Reference: 41aa179f-0e56-422f-9
+    Secret Referance: 12345678901234567890 -> UCbJMnqehLoU+0iUGlue
+-> Client 
+    MQTT Topic: mqtt/sensor
+    Price per Hour: 1
+-> Transaction 
+    Secret Referance: 12345678901234567890 -> c3o+qYh85YA5TNgNgu4g
+    Duration (Hours): 1
+
+Smart Contract JSON-RPC:
+    {"jsonrpc":"2.0","method":"eth_getTransactionReceipt","params":["0x96eb3323f485c695769f7e98125c0b40f671f39550e72144293abbded1cdbf3b"],"id":732}
 
 # MQTT: AES(T/F) api.py:299-300
-http://140.118.109.35:5000/aes?plain_text=12345678901234567890&secret_key=LFfDXPfjMjJ3C%2BEnXwfS&uuid_ref=e37f33fe-6f31-4844-9
-    secret_key=Server Secret Key
-    &uuid_ref= RSA reference
-    return "0TPR+zHujgizRAEqHCWZqUKs0lM="
+-> MQTT Client Simulator
+    Payload (select client first): 12345678901234567890 -> 6cgsY9UBvpMg6XHF03ld/8S39Iw=
 
-Key referance: 12345678901234567890
+-> [PUT] http://140.118.109.35:5000/mqtt
+    {"topic":"mqtt/sensor","payload":"6cgsY9UBvpMg6XHF03ld/8S39Iw=","hostname":"140.118.109.35:1883"}
+-> api.py:299-300
+    Trun On/Off for AES TEST
 
 """
 class LoadTest(Resource):
