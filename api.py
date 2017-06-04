@@ -296,8 +296,8 @@ class MQTT(Resource):
         try:
             topic = msg.topic
             # @Test disable
-            plain_text = AES_decryption(self.secret, msg.payload)
-            # plain_text = msg.payload
+            # plain_text = AES_decryption(self.secret, msg.payload)
+            plain_text = msg.payload
 
             print "__on_message: "+topic+" "+plain_text
             global mongoDB
@@ -406,7 +406,7 @@ api.add_resource(JWT, '/jwt')
     Secret Referance: 12345678901234567890 -> c3o+qYh85YA5TNgNgu4g
     Duration (Hours): 1
 
-Smart Contract JSON-RPC:
+Smart Contract JSON-RPC:446 payload
     {"jsonrpc":"2.0","method":"eth_getTransactionReceipt","params":["0x96eb3323f485c695769f7e98125c0b40f671f39550e72144293abbded1cdbf3b"],"id":732}
 
 # MQTT: AES(T/F) api.py:299-300
@@ -424,9 +424,9 @@ class LoadTest(Resource):
         """
             four type
             {
-                "transaction":{"secret":"e3YYkfek6UIOPxOW0Mly","start":"1495984407","end":"1495988007","consumer":"0x0ea97029eb84079d6b58e1d35057f863b0ff24f1","provider":"0x0ea97029eb84079d6b58e1d35057f863b0ff24f1","value":"1","ip":"140.118.109.35","topic":"mqtt/sensor"},
-                "sc_rsa": "T/F",
-                "sc_jwt": "T/F"
+                "transaction":{"secret":"c3o+qYh85YA5TNgNgu4g","start":"1495984407","end":"1495988007","consumer":"0x0ea97029eb84079d6b58e1d35057f863b0ff24f1","provider":"0x0ea97029eb84079d6b58e1d35057f863b0ff24f1","value":"1","ip":"140.118.109.35","topic":"mqtt/sensor"},
+                "sc_rsa": "F",
+                "sc_jwt": "T"
             }
         """
         json_data = request.get_json(force=True)
@@ -438,12 +438,12 @@ class LoadTest(Resource):
         # 1.sc_rsa: RSA_encryption(key reference) -> post.json(transaction) -> ... end to 2
         
         if sc_rsa == 'T':
-            result = encrypt_RSA("12345678901234567890", "e37f33fe-6f31-4844-9")
+            result = encrypt_RSA("12345678901234567890", "41aa179f-0e56-422f-9")
             # return result
 
         # smart contract: testrpc json-rpc
         import requests
-        payload = {"jsonrpc":"2.0","method":"eth_getTransactionReceipt","params":["0xccab1901536c26658e03568d939fe67243f59a715044fb54cc895620b89b2d2a"],"id":2281}
+        payload = {"jsonrpc":"2.0","method":"eth_getTransactionReceipt","params":["0x96eb3323f485c695769f7e98125c0b40f671f39550e72144293abbded1cdbf3b"],"id":732}
         r = requests.post("http://140.118.109.35:8545", json=payload)
         result = {"SC": str(r)}
         
