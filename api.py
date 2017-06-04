@@ -394,6 +394,22 @@ api.add_resource(JWT, '/jwt')
 
 
 # load test
+"""
+# Smart Contract: RSA(T/F), Transaction, JWT(T/F)
+Register Server > Client > Transaction 
+Secret Key referance: 12345678901234567890
+Topic: mqtt/sensor
+Value: 1
+
+# MQTT: AES(T/F) api.py:299-300
+http://140.118.109.35:5000/aes?plain_text=12345678901234567890&secret_key=LFfDXPfjMjJ3C%2BEnXwfS&uuid_ref=e37f33fe-6f31-4844-9
+    secret_key=Server Secret Key
+    &uuid_ref= RSA reference
+    回傳 "0TPR+zHujgizRAEqHCWZqUKs0lM="
+
+Key referance: 12345678901234567890
+
+"""
 class LoadTest(Resource):
     def post(self):
         """
