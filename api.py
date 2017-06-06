@@ -258,8 +258,8 @@ class MQTT(Resource):
         uuid_ref = json_data['uuid_ref']
 
         # @Test disable
-        # self.secret = decrypt_RSA(file_name, uuid_ref)
-        # print "SUBSCRIPTION", self.secret
+        self.secret = decrypt_RSA(file_name, uuid_ref)
+        print "SUBSCRIPTION", self.secret
 
         import threading
         t = threading.Thread(target=self.__subscription)
@@ -296,8 +296,8 @@ class MQTT(Resource):
         try:
             topic = msg.topic
             # @Test disable
-            # plain_text = AES_decryption(self.secret, msg.payload)
-            plain_text = msg.payload
+            plain_text = AES_decryption(self.secret, msg.payload)
+            # plain_text = msg.payload
 
             print "__on_message: "+topic+" "+plain_text
             global mongoDB
@@ -310,7 +310,8 @@ class MQTT(Resource):
             })
 
             print mongoDB
-        except:
+        except Exception, e:
+            print str(e)
             pass
 
 api.add_resource(MQTT, '/mqtt')
@@ -438,7 +439,7 @@ class LoadTest(Resource):
         # 1.sc_rsa: RSA_encryption(key reference) -> post.json(transaction) -> ... end to 2
         
         if sc_rsa == 'T':
-            result = encrypt_RSA("12345678901234567890", "41aa179f-0e56-422f-9")
+            result = encrypt_RSA("12345678901234567890", "1eab51f8-6049-4f58-8")
             # return result
 
         # smart contract: testrpc json-rpc

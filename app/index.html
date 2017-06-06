@@ -150,7 +150,7 @@
                   <h3 class="panel-title">MQTT Client Simulator</h3>
                 </div>
                 <div class="panel-body">
-                  <ol>
+                  <!--<ol>
                     <li>
                       From provider's colent to server 
                     </li>
@@ -160,7 +160,7 @@
                     <li>
                       Need check MQTT Server Enabled
                     </li>                 
-                  </ol>
+                  </ol>-->
                   <form>
                     <div class="form-group">
                       <label>Select Client to Publish:</label>
@@ -195,7 +195,7 @@
                   <h3 class="panel-title">Call API by JWT</h3>
                 </div>
                 <div class="panel-body">
-                  <ol>
+                  <!--<ol>
                     <li>
                       From consumer to provider's server 
                     </li>
@@ -211,7 +211,7 @@
                     <li>
                       404 when JWT expired or Error
                     </li> 
-                  </ol>
+                  </ol>-->
                   <form>
                     <div class="form-group">
                       <label>Select Transaction get JWT:</label>
@@ -254,12 +254,12 @@
             <h3 class="panel-title">Server Register</h3>
           </div>
           <div class="panel-body">
-            <ol>
+            <!--<ol>
               <li>Generate RSA key, get public_key_loc(uuid)</li>
               <li>RSA encrypt (provider AES key) as secret</li>
               <li>Transaction contract </li>
               <li>Event return, MQTT subscription</li>
-            </ol>
+            </ol>-->
             <form>
               <div class="form-group">
                 <label for="ip">IP Address:</label>
@@ -292,11 +292,11 @@
             <h3 class="panel-title">Client Register</h3>
           </div>
           <div class="panel-body">
-            <ol>
+            <!--<ol>
               <li>Transaction contract </li>
               <li>Event return</li>
               <li>MQTT publish AES(data) (provider AES key)</li>
-            </ol>
+            </ol>-->
             <form>
               <div class="form-group">
                 <label for="ip">IP Address (Server):</label>
@@ -326,13 +326,13 @@
             <h3 class="panel-title">Transaction</h3>
           </div>
           <div class="panel-body">
-            <ol>
+            <!--<ol>
               <li>Get server RSA public_key_loc</li>
               <li>RSA encrypt (consumer AES key) as secret</li>
               <li>Transaction contract </li>
               <li>Event return, then get JWT token</li>
               <li>JWT call API then AES decryption</li>              
-            </ol>
+            </ol>-->
             <form>
               <div class="form-group">
                 <label>Select Client to Transaction:</label>
@@ -381,9 +381,9 @@
           </div>
           <div class="panel-body">
             <form>
-              <p>
+              <!--<p>
                 Can't delete if client exist
-              </p>
+              </p>-->
               <div class="form-group">
                 <label for="ip">IP Address:</label>
                 <input type="text" class="form-control" ng-model="form.serverDelete.ip" required></input>
