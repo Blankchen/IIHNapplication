@@ -1,3 +1,16 @@
+# required 
+Truffle: https://github.com/trufflesuite/truffle
+(Blockchain Client) testrpc: https://github.com/ethereumjs/testrpc
+(Backend Services) Flask-RESTful: https://github.com/flask-restful/flask-restful
+(Backend Services) PyJW: https://pyjwt.readthedocs.io/en/latest/installation.html
+(Backend Services) pycrypto: https://github.com/dlitz/pycrypto
+(MQTT) paho.mqtt.python: https://github.com/eclipse/paho.mqtt.python#installation
+(MQTT) Mosquitto: https://mosquitto.org/
+
+# truffle documentation
+http://truffleframework.com/tutorials/building-testing-frontend-app-truffle-3
+http://truffleframework.com/docs/
+
 # truffle-init-webpack
 Example webpack project with Truffle. Includes contracts, migrations, tests, user interface and webpack build pipeline.
 
@@ -26,4 +39,28 @@ Full error:
 ERROR in ./app/main.js
 Module not found: Error: Can't resolve '../build/contracts/MetaCoin.json' in '/Users/tim/Documents/workspace/Consensys/test3/app'
  @ ./app/main.js 11:16-59
+```
+
+
+## Directory Structure
+
+
+```
+.
+├── app  <- User Interface (AngularJS, Bootstrap and web3.js)
+│   ├── javascripts
+│   │   └── app.js
+│   ├── stylesheets
+│   │   └── app.css
+│   └── index.html
+├── build  <- build smart contracts
+├── contracts <- smart contract solidity source
+├── keys <- RSA and AES keys
+├── migrations
+├── node_modules
+├── test
+├── api.py <- Backend Services (flask-restful, PyJWT and pycrypto)
+├── package.json <- Truffle 3 webpack npm setting
+└── README.md
+
 ```
