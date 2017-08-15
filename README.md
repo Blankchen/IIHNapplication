@@ -8,8 +8,38 @@
 - (MQTT) Mosquitto: https://mosquitto.org/
 
 # truffle documentation
-http://truffleframework.com/tutorials/building-testing-frontend-app-truffle-3
-http://truffleframework.com/docs/
+- http://truffleframework.com/tutorials/building-testing-frontend-app-truffle-3
+- http://truffleframework.com/docs/
+
+# How to start
+
+
+```bash
+$ cd this-project
+
+# install the project's dependencies
+$ npm install
+# fast install (via Yarn, https://yarnpkg.com)
+$ yarn install  # or yarn
+
+# start blokcchain test client
+$ testrpc.cmd 
+# start python backend
+$ python api.py
+
+# compile smart contract
+$ truffle.cmd compile
+# migrate contract to testrpc
+$ truffle.cmd migrate --reset
+
+# build website
+$ npm run build
+# start web service
+$ truffle.cmd serve
+# browser to http://localhost:8080/index.html
+
+
+```
 
 # truffle-init-webpack
 Example webpack project with Truffle. Includes contracts, migrations, tests, user interface and webpack build pipeline.
