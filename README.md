@@ -1,11 +1,11 @@
 # required 
-Truffle: https://github.com/trufflesuite/truffle
-(Blockchain Client) testrpc: https://github.com/ethereumjs/testrpc
-(Backend Services) Flask-RESTful: https://github.com/flask-restful/flask-restful
-(Backend Services) PyJW: https://pyjwt.readthedocs.io/en/latest/installation.html
-(Backend Services) pycrypto: https://github.com/dlitz/pycrypto
-(MQTT) paho.mqtt.python: https://github.com/eclipse/paho.mqtt.python#installation
-(MQTT) Mosquitto: https://mosquitto.org/
+- Truffle: https://github.com/trufflesuite/truffle
+- (Blockchain Client) testrpc: https://github.com/ethereumjs/testrpc
+- (Backend Services) Flask-RESTful: https://github.com/flask-restful/flask-restful
+- (Backend Services) PyJW: https://pyjwt.readthedocs.io/en/latest/installation.html
+- (Backend Services) pycrypto: https://github.com/dlitz/pycrypto
+- (MQTT) paho.mqtt.python: https://github.com/eclipse/paho.mqtt.python#installation
+- (MQTT) Mosquitto: https://mosquitto.org/
 
 # truffle documentation
 http://truffleframework.com/tutorials/building-testing-frontend-app-truffle-3
