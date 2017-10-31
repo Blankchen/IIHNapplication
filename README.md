@@ -1,4 +1,4 @@
-# required 
+# Required 
 - Truffle: https://github.com/trufflesuite/truffle
 - (Blockchain Client) testrpc: https://github.com/ethereumjs/testrpc
 - (Backend Services) Flask-RESTful: https://github.com/flask-restful/flask-restful
@@ -7,7 +7,7 @@
 - (MQTT) paho.mqtt.python: https://github.com/eclipse/paho.mqtt.python#installation
 - (MQTT) Mosquitto: https://mosquitto.org/
 
-# truffle documentation
+# Truffle documentation
 - http://truffleframework.com/tutorials/building-testing-frontend-app-truffle-3
 - http://truffleframework.com/docs/
 
@@ -41,7 +41,7 @@ $ truffle.cmd serve
 
 ```
 
-# truffle-init-webpack
+# Truffle-init-webpack
 Example webpack project with Truffle. Includes contracts, migrations, tests, user interface and webpack build pipeline.
 
 ## Usage
