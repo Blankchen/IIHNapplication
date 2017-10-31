@@ -1,3 +1,6 @@
+# SlideShare
+- Presentation: https://www.slideshare.net/secret/ditoOmHvuzQXsC
+
 # Required 
 - Truffle: https://github.com/trufflesuite/truffle
 - (Blockchain Client) testrpc: https://github.com/ethereumjs/testrpc
